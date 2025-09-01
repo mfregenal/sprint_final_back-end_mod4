@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import apiRoutes from './routes/APIRoutes.mjs';
+import apiRoutes from './routes/apiRoutes.mjs';
 import authRoutes from './routes/authRoutes.mjs';
 
 dotenv.config(); // Carga las variables del archivo .env
