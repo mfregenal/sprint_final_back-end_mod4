@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 // Permite acceder al backend desde otros directorios como front-end
 app.use(cors( {
-  origin: "https://tecnonar.netlify.app/",
+  origin: "https://tecnonar.netlify.app",
   credentials: true
 }));
 
