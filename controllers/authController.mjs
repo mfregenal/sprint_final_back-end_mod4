@@ -27,7 +27,7 @@ export const login = async (req, res) => {
     res.cookie('token', result.token, {
       httpOnly: true,
       secure: true,
-      sameSite: 'Strict',
+      sameSite: 'None',
       maxAge: 2 * 60 * 60 * 1000
     });
 
@@ -55,5 +55,6 @@ export const check = async (req, res) => {
     res.json({ loggedIn: true, user: user });
   } catch (error) {
     res.json({ loggedIn: false });
+    console.log(error);
   }
 }
