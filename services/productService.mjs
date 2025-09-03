@@ -1,22 +1,26 @@
 import { ProductModel } from '../models/productModel.mjs';
+import path from 'path';
+import fs from 'fs/promises';
 
 class ProductService {
 
   // Método para obtener todos los productos
   async getProducts (query) {
-    let filtro
+    let filtro = {}
 
-    // Construimos el filtro con $and dinámico
+    // Construimos el filtro con $and dinámico. Todos los campos deben coincidir. Búsqueda dinámica
     if ( query ) {
       filtro = {
-        $and: Object.entries(query).map( ( [key, value] ) => ({
-          [key]: { $regex: value, $options: 'i' }
+        $and: Object.entries(query).map( ( [key, value] ) => ({ // Convertimos al obj query en un array de pares [clave, valor]
+          [key]: { $regex: value, $options: 'i' } // Creamos un objeto de filtros para MongoDB
         }))
       };
     }
 
-    return await ProductModel.find(filtro);
+    return await ProductModel.find(filtro).populate('categoria'); // Realizamos la búsqueda y devolvemos el resultado 
   }
+
+
 
   // Método para agregar nuevos productos
   async addProduct (nombre, precio, categoria, imagen) {
@@ -24,7 +28,7 @@ class ProductService {
     const existeProducto = await ProductModel.findOne({ nombre });
 
     if ( existeProducto ) {
-      await deleteImage(imagen);
+      await this.deleteImage(imagen);
       return { status: 409, message: 'Ya existe un producto con ese nombre' }
     }
 
@@ -41,6 +45,8 @@ class ProductService {
 
   }
 
+
+
   // Método para editar un producto
   async editProduct (_id, nombre, precio, categoria, imagen) {
 
@@ -50,7 +56,7 @@ class ProductService {
     // Verificamos que no exista un producto con el mismo nombre
     if ( existeProducto ) {
       if ( imagen ){
-        await deleteImage(imagen);
+        await this.deleteImage(imagen);
       }
       return { status: 409, message: 'Ya existe un producto con ese nombre' }
     }
@@ -59,7 +65,7 @@ class ProductService {
     if ( !imagen ){
       imagen = prevProduct.imagen;
     } else {
-      await deleteImage(prevProduct.imagen);
+      await this.deleteImage(prevProduct.imagen);
     }
 
     const updatedProduct = await ProductModel.findByIdAndUpdate(
@@ -74,6 +80,8 @@ class ProductService {
     return { status: 200, message: 'Producto actualizado exitosamente' }
   }
 
+
+
   // Método para eliminar un producto
   async deleteProduct (_id) {
     const deleted = await ProductModel.findByIdAndDelete(_id); // Eliminamos el elemento y lo guardamos lo devuelto
@@ -82,31 +90,25 @@ class ProductService {
       return { status: 404, message: 'Producto no encontrado' };
     }
 
-    await deleteImage(deleted.imagen);
+    await this.deleteImage(deleted.imagen);
 
     return { status: 200, message: 'Producto eliminado correctamente' };
   }
-  
+
+
+
+  // Método auxiliar para eliminar imágenes
+  async deleteImage (filename) {
+    if (!filename) return;
+
+    const ruta = path.join(process.cwd(), 'uploads', filename); // Conseguimos la ruta del archivo desde el directorio actual que corre index.mjs
+    try {
+      await fs.unlink(ruta); // Eliminamos el archivo indicado en la ruta
+    } catch (error) {
+      console.log('No se pudo eliminar la imagen:', error.message);
+      throw new Error('Error interno detectado. Contacta a soporte para más información.');
+    }
+  };
 }
 
-const deleteImage = async (filename) => {
-  if (!filename) return;
-
-  const ruta = path.join(process.cwd(), 'uploads', filename); // Conseguimos la ruta del archivo desde el directorio actual que corre index.mjs
-  try {
-    await fs.unlink(ruta); // Eliminamos el archivo indicado en la ruta
-  } catch (error) {
-    console.log('No se pudo eliminar la imagen:', error.message);
-    throw new Error('Error interno detectado. Contacta a soporte para más información.');
-  }
-};
-
 export default new ProductService;
-
-
-
-
-
-
-
-

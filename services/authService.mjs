@@ -47,14 +47,16 @@ class AuthService {
     const token = this.generateToken(user);
 
     // Retornamos el usuario (sin password) y su token
-    return { user: userResponse, token };
+    return { user: userResponse, token};
   }
 
+
+
   // Método para iniciar sesión
-  async login(email, password) {
+  async login(username, password) {
 
     // Buscamos el usuario por email
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ username }).populate('role');
     
     if (!user) {
       throw new Error('Usuario no encontrado');
@@ -73,9 +75,18 @@ class AuthService {
 
     // Generamos un nuevo token y retornamos la respuesta
     const token = this.generateToken(user);
-    return { user: userResponse, token };
 
+    return { user: userResponse, token };
   }
+
+
+
+  // Método para checkear el Login
+  async check (token) {
+    return jwt.verify(token, process.env.JWT_SECRET);
+  }
+
+
 
   // Método auxiliar para generar tokens JWT
   generateToken(user) {
@@ -83,7 +94,8 @@ class AuthService {
     // Creamos un token que incluye el id, rol y permisos del usuario
     return jwt.sign(
       { 
-        id: user._id
+        id: user._id,
+        role: user.role
       },
 
       // Usamos la clave secreta del .env
@@ -93,7 +105,6 @@ class AuthService {
       { expiresIn: '2h' }
     );
   }
-
 }
 
 export default new AuthService;

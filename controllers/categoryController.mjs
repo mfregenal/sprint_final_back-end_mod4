@@ -16,6 +16,7 @@ export const addCategory = async (req, res) => {
 
   try {
     const response = await CategoryService.addCategory(nombre);
+
     res.status(response.status).json( response.message );
   } catch (error) {
     res.status(500).json({ message: 'Error al crear nueva categoría', error});
