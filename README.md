@@ -60,3 +60,5 @@ Metodos            Endpoint                      Descripción
                                           Obtener un producto especifico
 -PUT            /api/prducts/edit          Editar un producto 
 -DELETE          /api/products/:_id        Eliminar un producto
+
+Desplegado: https://tecnonar-api.onrender.com
