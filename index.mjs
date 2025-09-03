@@ -13,8 +13,20 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Permite acceder al backend desde otros directorios como front-end
-app.use(cors( {
-  origin: "https://tecnonar.netlify.app",
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://tecnonar.netlify.app'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
